@@ -25,15 +25,24 @@ public class LoginNonAdminEXP extends BaseMobileTest {
 		verifyEquals("Opportunities", selenium.getText("XPath=.//*[@id='home']/div[3]/ul[2]/li[7]/div[2]/h3"));
 		verifyEquals("Tickets", selenium.getText("XPath=.//*[@id='home']/div[3]/ul[2]/li[8]/div[2]/h3"));
 		
-		//test nav		
-		clickHomeScreenLink("My Activities", "My Activities");
+		//test Speed Search + item nav
+		//doSpeedSearch("Abbott");
+		//makeSpeedSearchSelection("Hans Wurst (Abbot)");
 		
+		//test nav		
+		//clickHomeScreenLink("My Activities", "My Activities");
+		
+		//tets item search
+		lookupItem("Leads", "Best");
+		
+		/*
 		//test logout		
 		doLogout();
 		
 		// VP: Copyright Info...
 		verifyEquals(copyrightLabel, selenium.getText("XPath=.//*[@id='login']/span[1]"));
 		verifyEquals(versionLabel, selenium.getText("XPath=.//*[@id='login']/span[2]"));
+		*/
 	}
 		
 }

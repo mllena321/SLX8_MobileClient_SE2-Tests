@@ -16,6 +16,8 @@ import java.io.FileReader;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.testng.Assert;
+
 public abstract class BaseMobileTest extends SeleneseTestNgHelper {
 	public WebDriver driver = new FirefoxDriver();
 	public Selenium selenium;
@@ -62,10 +64,12 @@ public abstract class BaseMobileTest extends SeleneseTestNgHelper {
 	public void tearDown() throws Exception {
 		selenium.stop();
 		
+		/*
 		String verificationErrorString = verificationErrors.toString();
 		if (!"".equals(verificationErrorString)) {
 			fail(verificationErrorString);
 		}
+		*/
 	}
 	
 	public boolean isElementPresent(By by) {
@@ -119,15 +123,69 @@ public abstract class BaseMobileTest extends SeleneseTestNgHelper {
 			Thread.sleep(1000);
 		}
 	}
+
+	public void lookupItem(String itemType, String itemName) throws Exception {
+		String lookupFldID = null;
+		String lookupBtnID = null;
+		String resultsLstID = null;
+		
+		clickHomeScreenLink(itemType, itemType);
+		
+		switch (itemType){
+		case "My Activities":
+			lookupFldID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_26']/div/div[1]/input";
+			lookupBtnID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_26']/div/div[3]/button";
+			resultsLstID = ".//*[@id='myactivity_list']";
+		case "Notes/History":
+			lookupFldID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_27']/div/div[1]/input";
+			lookupBtnID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_27']/div/div[3]/input";
+			resultsLstID = ".//*[@id='history_list']";
+		case "Accounts":
+			lookupFldID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_3']/div/div[1]/input";
+			lookupBtnID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_3']/div/div[3]/button";
+			resultsLstID = ".//*[@id='account_list']";
+		case "Contacts":
+			lookupFldID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_3']/div/div[1]/input";
+			lookupBtnID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_3']/div/div[3]/button";
+			resultsLstID = ".//*[@id='contact_list']";
+		case "Leads":
+			lookupFldID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_16']/div/div[1]/input";
+			lookupBtnID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_16']/div/div[3]/input";
+			resultsLstID = ".//*[@id='lead_list']";
+		case "Opportunities":
+			lookupFldID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_11']/div/div[1]/input";
+			lookupBtnID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_11']/div/div[3]/input";
+			resultsLstID = ".//*[@id='opportunity_list']";
+		case "Tickets":
+			lookupFldID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_18']/div/div[1]/input";
+			lookupBtnID = ".//*[@id='Sage_Platform_Mobile_SearchWidget_18']/div/div[3]/input";
+			resultsLstID = ".//*[@id='ticket_list']";
+		}
+		
+		selenium.typeKeys("XPath=" + lookupFldID, itemName);
+		selenium.click("XPath=" + lookupBtnID);
+		Thread.sleep(5000);
+		
+		//wait for results to show
+		for (int second = 0;; second++) {
+			if (second >= 60) fail("timeout");
+			try { if (selenium.isElementPresent("XPath=.//*[@id='" + resultsLstID + "']/ul/li[1]")) break; } catch (Exception e) {}
+			Thread.sleep(1000);
+		}
+		
+		//check if search text exists in Speed Search results
+		Assert.assertTrue(selenium.isTextPresent(itemName));
+	}
 	
 	public void clickHomeScreenLink(String linkName, String pagetitle) throws Exception {
 		String linkpath = "XPath=.//*[@id='home']/descendant::*[text()='" + linkName + "']";
+		
 		selenium.click(linkpath);
-		Thread.sleep(3000);
+		Thread.sleep(7000);
 		//test page title check
 		verifyEquals(pagetitle, selenium.getText("XPath=.//*[@id='pageTitle']"));	
 	}
-	
+		
 	public void doLogout() throws Exception {
 		selenium.click("XPath=.//*[@id='Mobile_SalesLogix_Views_FooterToolbar_0']/div/button[4]");
 		Thread.sleep(3000);
@@ -137,7 +195,8 @@ public abstract class BaseMobileTest extends SeleneseTestNgHelper {
 	
 	public void doSpeedSearch(String searchitem) throws Exception {
 		selenium.open("#home");
-		Thread.sleep(3000);
+		Thread.sleep(5000);
+		
 		//test page title check
 		verifyEquals("Home", selenium.getText("XPath=.//*[@id='pageTitle']"));
 		
@@ -146,7 +205,21 @@ public abstract class BaseMobileTest extends SeleneseTestNgHelper {
 		selenium.click("XPath=.//*[@id='Mobile_SalesLogix_SpeedSearchWidget_0']/div/div[3]/button");
 		Thread.sleep(5000);
 		
-		// TODO: setup explicit wait for results to show
+		//wait for results to show
+		for (int second = 0;; second++) {
+			if (second >= 60) fail("timeout");
+			try { if (selenium.isElementPresent("XPath=.//*[@id='speedsearch_list']/ul/li[1]")) break; } catch (Exception e) {}
+			Thread.sleep(1000);
+		}
+		
+		//check if search text exists in Speed Search results
+		Assert.assertTrue(selenium.isTextPresent(searchitem));
+		verifyEquals("Search Results", selenium.getText("XPath=.//*[@id='pageTitle']"));
+	}
+	
+	public void makeSpeedSearchSelection(String linkitemtxt) throws Exception {
+		selenium.click("XPath=/descendant::*[text() = '" + linkitemtxt + "']");
+		Thread.sleep(5000);
 	}
 
 }
